@@ -1,0 +1,53 @@
+Metadata-Version: 2.4
+Name: archive-search
+Version: 0.1.0
+Summary: Mailing list archive search: index Google Groups + linked content, query via API and chat UI
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: httpx>=0.27
+Requires-Dist: beautifulsoup4>=4.12
+Requires-Dist: trafilatura>=1.6
+Requires-Dist: pymupdf4llm>=0.0.12
+Requires-Dist: langchain-text-splitters>=0.2
+Requires-Dist: pymongo>=4.6
+Requires-Dist: openai>=1.12
+Requires-Dist: python-dotenv>=1.0
+Requires-Dist: click>=8.1
+Requires-Dist: fastapi>=0.109
+Requires-Dist: uvicorn[standard]>=0.27
+Requires-Dist: pydantic>=2.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23; extra == "dev"
+Requires-Dist: ruff>=0.1; extra == "dev"
+Provides-Extra: local-embeddings
+Requires-Dist: sentence-transformers>=2.3; extra == "local-embeddings"
+
+# Archive Search
+
+Web app to search a mailing list archive (Google Groups) using natural language. Indexes message content and linked articles/PDFs, then supports semantic search and optional LLM-generated answers via a chat UI.
+
+## Components
+
+- **Indexer CLI**: Fetches messages from the CoRE stack NRM Google Group, extracts links, fetches and chunks linked content, embeds and stores in MongoDB.
+- **Query API**: FastAPI app exposing search and session endpoints; vector search + optional LLM answer.
+- **Frontend**: Chat interface to query the archive.
+
+## Quick start
+
+See [docs/INSTALL.md](docs/INSTALL.md) for full installation and run instructions.
+
+```bash
+# Backend
+pip install -e .
+cp .env.example .env   # edit .env
+python -m src.indexer build --full   # first-time index
+uvicorn src.api.main:app --reload --port 8000
+
+# Frontend
+cd frontend && npm install && npm run dev
+```
+
+## License
+
+MIT
