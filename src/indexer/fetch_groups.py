@@ -18,7 +18,7 @@ from src.shared.models import Message
 logger = logging.getLogger(__name__)
 
 # Seconds to wait for list/topic page to load
-PAGE_LOAD_WAIT = 5
+PAGE_LOAD_WAIT = 2.5
 # Seconds between list-page next clicks
 REQUEST_DELAY = 1.0
 
@@ -138,6 +138,8 @@ def _parse_message_blocks(soup: BeautifulSoup, thread_url: str, thread_subject: 
 def _collect_topic_urls_with_pagination(
     driver: webdriver.Chrome,
     base: str,
+    load_urls_from_file: bool,
+    topic_urls_file: str,    
     limit_topics: int | None,
 ) -> list[str]:
     """
@@ -145,7 +147,17 @@ def _collect_topic_urls_with_pagination(
     Stops when we have at least limit_topics URLs or there is no Next button.
     """
     driver.get(base)
-    time.sleep(PAGE_LOAD_WAIT)
+#    time.sleep(PAGE_LOAD_WAIT)
+
+    if load_urls_from_file:
+        try:
+            with open(topic_urls_file, "r", encoding="utf-8") as f:
+                all_links = [link.strip() for link in f]
+            logger.info("Read list of %d topic URLs from %s", len(all_links), topic_urls_file)
+
+            return all_links
+        except Exception as e:
+            logger.debug("topic_urls_file could not be read: %s", e)
 
     all_links: list[str] = []
     page_num = 0
@@ -175,13 +187,24 @@ def _collect_topic_urls_with_pagination(
             logger.debug("No more pages or click failed: %s", e)
             break
 
+    try:
+        with open(topic_urls_file, "w", encoding="utf-8") as f:
+            for link in all_links:
+                f.write(link + "\n")
+            logger.info("Written %d topic URLs to %s", len(all_links), topic_urls_file)
+    except Exception as e:
+        logger.debug("topic_urls_file could not be written: %s", e)
+
     return all_links
 
 
 def fetch_group_messages(
     group_url: str | None = None,
+    load_urls_from_file: bool = False,
+    topic_urls_file: str | None = None,
     *,
     limit_topics: int | None = None,
+    start_index: int | None = None,
     since_message_id: str | None = None,
     headless: bool = True,
 ) -> list[Message]:
@@ -202,16 +225,22 @@ def fetch_group_messages(
     driver = _make_driver(headless=headless)
     try:
         # Paginate main list and collect topic URLs
-        topic_urls = _collect_topic_urls_with_pagination(driver, base, limit_topics)
+        topic_urls = _collect_topic_urls_with_pagination(driver, base, load_urls_from_file, topic_urls_file, limit_topics)
+
         if limit_topics is not None:
             topic_urls = topic_urls[:limit_topics]
         logger.info("Will fetch %d topic pages", len(topic_urls))
 
-        for topic_url in topic_urls:
-            time.sleep(REQUEST_DELAY)
+        if start_index is None:
+            start_index = 0
+
+        logger.info("Fetchings %d topics from %d index", len(topic_urls), start_index)
+
+        for topic_url in topic_urls[start_index:]:
+#            time.sleep(REQUEST_DELAY)
             try:
                 driver.get(topic_url)
-                time.sleep(PAGE_LOAD_WAIT)
+#                time.sleep(PAGE_LOAD_WAIT)
                 tsoup = BeautifulSoup(driver.page_source, "html.parser")
                 title_el = tsoup.find("title") or tsoup.find("h1")
                 thread_subject = title_el.get_text(strip=True) if title_el else "No subject"

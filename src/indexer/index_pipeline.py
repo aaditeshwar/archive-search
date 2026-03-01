@@ -47,8 +47,10 @@ def _set_last_message_cursor(message_id: str) -> None:
 def run_pipeline(
     full_rebuild: bool = False,
     group_url: str | None = None,
+    load_urls_from_file: bool = False,
     skip_linked: bool = False,
     limit_topics: int | None = None,
+    start_index: int | None = None,
     headless: bool = True,
 ) -> None:
     """
@@ -57,6 +59,7 @@ def run_pipeline(
     """
     cfg = get_config()
     group_url = group_url or cfg["group_url"]
+    topic_urls_file = cfg["topic_urls_file"]
     messages_coll = get_messages_collection()
     linked_coll = get_linked_docs_collection()
     chunks_coll = get_chunks_collection()
@@ -65,7 +68,10 @@ def run_pipeline(
     logger.info("Fetching messages from %s (full=%s)", group_url, full_rebuild)
     messages = fetch_group_messages(
         group_url,
+        load_urls_from_file,
+        topic_urls_file,
         limit_topics=limit_topics,
+        start_index=start_index,
         since_message_id=since_id,
         headless=headless,
     )

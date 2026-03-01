@@ -19,6 +19,7 @@ def get_config() -> dict:
         "enable_llm_answer": os.getenv("ENABLE_LLM_ANSWER", "false").lower() in ("true", "1", "yes"),
         "redis_url": os.getenv("REDIS_URL", ""),
         "group_url": os.getenv("GROUP_URL", "https://groups.google.com/g/core-stack-nrm/"),
+        "topic_urls_file": os.getenv("TOPIC_URLS_FILE", "data/topic_urls.txt"),
         "chunks_collection": "chunks",
         "messages_collection": "messages",
         "linked_docs_collection": "linked_docs",

@@ -17,7 +17,7 @@ def _is_pdf_url(url: str, content_type: str | None) -> bool:
     path = (urlparse(url).path or "").lower()
     return path.endswith(".pdf") or ".pdf?" in path
 
-
+# @aseth - not used, moved to selenium
 def fetch_and_extract(url: str, *, timeout: int = 30) -> tuple[str, str]:
     """
     Fetch URL and extract main text. Returns (title_or_url, extracted_text).
@@ -62,8 +62,11 @@ def fetch_with_selenium(url, timeout=20) -> tuple[str, str]:
         print("----- final_url -----", final_url)
 
         # Use HEAD request to detect content-type
-        head = requests.head(final_url, allow_redirects=True, timeout=timeout)
-        content_type = head.headers.get("content-type", "")
+#        head = requests.head(final_url, allow_redirects=True, timeout=timeout)
+#        content_type = head.headers.get("content-type", "")
+
+        # @aseth - using HEAD is probably redundant. getting it directly from the selenium driver
+        content_type = driver.execute_script("return document.contentType;")
         print("----- content_type -----", content_type)
 
         if _is_pdf_url(final_url, content_type):
