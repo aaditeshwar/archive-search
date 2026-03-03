@@ -13,6 +13,11 @@ def get_embedding_client():
         return SentenceTransformerEmbeddings(
             model_name=cfg.get("sentence_transformers_model", "all-MiniLM-L6-v2")
         )
+    elif model == "ollama":
+        from src.shared.embeddings_ollama import OllamaEmbeddings
+
+        return OllamaEmbeddings(model_name=cfg.get("ollama_embed_model", "nomic-embed-text"))
+
     # default: openai
     from src.shared.embeddings_openai import OpenAIEmbeddings
 

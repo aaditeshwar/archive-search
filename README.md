@@ -1,6 +1,6 @@
 # Archive Search
 
-Web app to search a mailing list archive (Google Groups) using natural language. Indexes message content and linked articles/PDFs, then supports semantic search and optional LLM-generated answers via a chat UI.
+Web app to search a mailing list archive (Google Groups) using natural language. Indexes message content and linked articles/PDFs, then supports semantic search and optional LLM-generated answers via a chat UI. Embeddings and chat can use **OpenAI** or **Ollama** (local); see [docs/INSTALL.md](docs/INSTALL.md).
 
 ## Components
 
@@ -25,4 +25,4 @@ cd frontend && npm install && npm run dev
 
 ## License
 
-MIT
+AGPL version 3
