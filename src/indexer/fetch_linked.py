@@ -70,6 +70,10 @@ def fetch_with_selenium(url, timeout=20) -> tuple[str, str]:
         print("----- content_type -----", content_type)
 
         if _is_pdf_url(final_url, content_type):
+            # @aseth - removing redundant call to get the pdf again using requests.get
+#            for request in driver.requests:
+#                if request.response and 'application/pdf' in request.response.headers.get('Content-Type', ''):
+#                   return _extract_pdf(request.response.body, final_url)
             resp = requests.get(final_url, timeout=timeout)
             resp.raise_for_status()
             return _extract_pdf(resp.content, final_url)
@@ -109,18 +113,20 @@ def _extract_html(raw: bytes, url: str, content_type: str) -> tuple[str, str]:
 
 def _extract_pdf(raw: bytes, url: str) -> tuple[str, str]:
     """Extract text from PDF bytes using pymupdf4llm."""
-    try:
-        import pymupdf4llm
-    except ImportError:
-        import pymupdf
-        doc = pymupdf.open(stream=raw, filetype="pdf")
-        text = "\n".join(page.get_text() for page in doc)
-        doc.close()
-        return url, text[:50000]
-    text = pymupdf4llm.to_markdown(io.BytesIO(raw), page_chunks=False)
-    if isinstance(text, list):
-        text = "\n\n".join(text)
-    return url, (text or "")[:50000]
+#    try:
+#        import pymupdf4llm
+#    except ImportError as e:
+# @aseth - fixed this
+    import pymupdf
+    doc = pymupdf.open(stream=raw, filetype="pdf")
+    text = "\n".join(page.get_text() for page in doc)
+    doc.close()
+    return url, text[:50000]
+#    text = pymupdf4llm.to_markdown(io.BytesIO(raw), page_chunks=False)
+#    print(f"----------- Read pdf text: {text}")
+#    if isinstance(text, list):
+#        text = "\n\n".join(text)
+#    return url, (text or "")[:50000]
 
 
 def normalize_url(url: str) -> str:

@@ -52,6 +52,7 @@ def run_pipeline(
     limit_topics: int | None = None,
     start_index: int | None = None,
     headless: bool = True,
+    proxy_url: str | None = None,
 ) -> None:
     """
     Run full index pipeline: fetch messages (incremental unless full_rebuild),
@@ -74,6 +75,7 @@ def run_pipeline(
         start_index=start_index,
         since_message_id=since_id,
         headless=headless,
+        proxy_url=proxy_url,
     )
     if not messages:
         logger.warning("No messages fetched. Group may be JS-rendered; consider using Playwright.")
@@ -115,17 +117,18 @@ def run_pipeline(
             continue
 
         # Chunk message
-        text = f"Subject: {msg.subject}\n\n{msg.body}".strip()
+#        text = f"Subject: {msg.subject}\n\n{msg.body}".strip()
+        text = msg.body.strip()
         if text:
             for i, ct in enumerate(chunk_text(text)):
                 print("------chunk_text_2-----", ct, "---------")
                 all_chunk_docs.append({
                     "chunk_id": _chunk_id("message", msg.message_id, "", i),
-                    "text": ct,
+                    "text": ct + "\n" + msg.subject,
                     "source_type": "message",
                     "message_id": msg.message_id,
                     "message_url": msg.url,
-                    "linked_url": "",
+                    "linked_url": links[0],
                     "metadata": {"subject": msg.subject, "chunk_index": i},
                 })
 
@@ -140,7 +143,7 @@ def run_pipeline(
                 try:
                     # @aseth - use selenium with head to download
 #                    title, raw_text = fetch_and_extract(url)
-                    title, raw_text = fetch_with_selenium(url)
+                    dummy, raw_text = fetch_with_selenium(url)
                     prev = linked_coll.find_one({"url": norm}) or {}
                     msg_ids = list(set(prev.get("message_ids", []) + [msg.message_id]))
                     print("------linked_coll-----", len(raw_text), "---------")
@@ -173,7 +176,7 @@ def run_pipeline(
                 print("------chunk_text_3-----", ct, "---------")
                 all_chunk_docs.append({
                     "chunk_id": _chunk_id("linked_page", msg.message_id, norm, j),
-                    "text": ct,
+                    "text": ct + "\n" + msg.subject,
                     "source_type": "linked_page",
                     "message_id": msg.message_id,
                     "message_url": msg.url,

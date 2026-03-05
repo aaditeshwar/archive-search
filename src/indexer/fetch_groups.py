@@ -8,6 +8,10 @@ from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+#from seleniumwire import webdriver
+#from selenium.webdriver.chrome.service import Service
+#from webdriver_manager.chrome import ChromeDriverManager
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -26,11 +30,13 @@ REQUEST_DELAY = 1.0
 NEXT_PAGE_XPATH = "//div[@aria-label='Next page']"
 
 
-def _make_driver(headless: bool = True) -> webdriver.Chrome:
+def _make_driver(headless: bool = True, proxy_url: str | None = None) -> webdriver.Chrome:
     """Create a Chrome WebDriver (caller must quit())."""
     opts = webdriver.ChromeOptions()
     if headless:
         opts.add_argument("--headless=new")
+    if proxy_url:
+        opts.add_argument("--proxy-server=%s" % proxy_url)
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     return webdriver.Chrome(options=opts)
@@ -207,6 +213,7 @@ def fetch_group_messages(
     start_index: int | None = None,
     since_message_id: str | None = None,
     headless: bool = True,
+    proxy_url: str | None = None,
 ) -> list[Message]:
     """
     Fetch messages from a Google Group using Selenium to paginate the main list
@@ -222,7 +229,7 @@ def fetch_group_messages(
     all_messages: list[Message] = []
     seen_ids: set[str] = set()
 
-    driver = _make_driver(headless=headless)
+    driver = _make_driver(headless=headless, proxy_url=proxy_url)
     try:
         # Paginate main list and collect topic URLs
         topic_urls = _collect_topic_urls_with_pagination(driver, base, load_urls_from_file, topic_urls_file, limit_topics)

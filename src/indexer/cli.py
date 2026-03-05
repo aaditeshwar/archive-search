@@ -18,6 +18,7 @@ def main() -> None:
 @click.option("--limit", "limit_topics", type=int, default=None, help="Max topic pages to fetch (for testing)")
 @click.option("--start-index", "start_index", type=int, default=None, help="Topic index to start from")
 @click.option("--no-headless", is_flag=True, help="Show browser window (for debugging)")
+@click.option("--proxy-url", default=None, help="Proxy URL")
 def cmd_update(
     group_url: str | None,
     load_urls_from_file: bool,
@@ -25,6 +26,7 @@ def cmd_update(
     limit_topics: int | None,
     start_index: int | None,
     no_headless: bool,
+    proxy_url: str | None,
 ) -> None:
     """Incremental update: fetch new messages since last run and index them."""
     run_pipeline(
@@ -35,6 +37,7 @@ def cmd_update(
         limit_topics=limit_topics,
         start_index=start_index,
         headless=not no_headless,
+        proxy_url=proxy_url,
     )
 
 
@@ -46,6 +49,7 @@ def cmd_update(
 @click.option("--limit", "limit_topics", type=int, default=None, help="Max topic pages to fetch (for testing)")
 @click.option("--start-index", "start_index", type=int, default=None, help="Topic index to start from")
 @click.option("--no-headless", is_flag=True, help="Show browser window (for debugging)")
+@click.option("--proxy-url", default=None, help="Proxy URL")
 def cmd_build(
     full_rebuild: bool,
     group_url: str | None,
@@ -54,6 +58,7 @@ def cmd_build(
     limit_topics: int | None,
     start_index: int | None,
     no_headless: bool,
+    proxy_url: str | None,
 ) -> None:
     """Build or rebuild the index. Use --full for full rebuild (default)."""
     run_pipeline(
@@ -64,6 +69,7 @@ def cmd_build(
         limit_topics=limit_topics,
         start_index=start_index,
         headless=not no_headless,
+        proxy_url=proxy_url,
     )
 
 
