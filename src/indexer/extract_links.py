@@ -59,7 +59,6 @@ def extract_links(body: str, *, allowlist: set[str] | None = None, allow_all: bo
         try:
             parsed = urlparse(u)
             netloc = (parsed.netloc or "").lower().lstrip("www.")
-            print("----------------------", netloc, parsed, "---------------")
             if not netloc:
                 continue
             # Check exact domain or parent (e.g. *.nature.com)

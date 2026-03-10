@@ -14,7 +14,7 @@ export type SearchResponse = {
 };
 
 const API_BASE =
-  (import.meta as any).env?.VITE_API_BASE?.toString() || "http://localhost:8000";
+  (import.meta as any).env?.VITE_API_BASE?.toString() ?? (typeof window !== "undefined" ? "" : "http://localhost:8000");
 
 export async function createSession(): Promise<{ session_id: string }> {
   const res = await fetch(`${API_BASE}/api/sessions`, { method: "POST" });

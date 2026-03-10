@@ -10,7 +10,7 @@ This repo has three main parts:
 
 - **Python 3.11+**
 - **Node.js 18+** (for frontend build and dev server)
-- **MongoDB** – local Community Server or **MongoDB Atlas** (vector search is supported on Atlas; see below)
+- **MongoDB** – local **MongoDB Atlas** (vector search is supported on Atlas; see below)
 - **Selenium + Chrome** for Google Groups scraping (Chrome + ChromeDriver on PATH)
 - **Ollama** (optional) for local embeddings/chat – [ollama.ai](https://ollama.ai), default `http://localhost:11434`
 
@@ -50,44 +50,19 @@ This repo has three main parts:
 
 ## MongoDB installation
 
-You can use **MongoDB Atlas** (cloud, with vector search) or **MongoDB Community Server** (local). Vector search (`$vectorSearch`) is available on **Atlas**; for a local-only setup you may need to rely on Atlas or a MongoDB build that supports it.
+You can use **MongoDB Atlas** (cloud, with vector search) or **MongoDB Community Server** (local). Vector search (`$vectorSearch`) is available on **Atlas**; for a local-only setup you may need to rely on Atlas or a MongoDB build that supports it. The instructions below are for a local **MongoDB Atlas** setup.   
 
-### Option A: MongoDB Atlas cloud
-
-1. Sign up at [mongodb.com/atlas](https://www.mongodb.com/atlas) and create a free cluster (e.g. M0).
-2. Under **Database** → **Connect** → **Drivers**, copy the connection string (e.g. `mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`).
-3. In **Database** → **Browse Collections**, create a database (e.g. `archive_search`) and collections as needed (the indexer and API will create `messages`, `linked_docs`, `chunks`, `state`, `sessions` when you run them).
-4. Create the **vector search index** on the `chunks` collection:
-  - Go to **Atlas Search** (or **Search** in the left menu) → **Create Search Index**.
-  - Choose **JSON Editor** and use an index definition like (adjust `numDimensions` to your embedding size, e.g. 768 for nomic-embed-text):
-5. Set in `.env`:
-  ```
-   MONGODB_URI=mongodb+srv://user:password@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
-   MONGODB_DB=archive_search
-  ```
-   Replace `user`/`password` and cluster host with your values. Restrict Atlas **Network Access** (e.g. your server IP or `0.0.0.0/0` for dev only).
-
-### Option B: MongoDB Community Server through Atlas (local)
-
-~~1. Install **MongoDB Community Server**:~~
-  - [Installation docs](https://www.mongodb.com/docs/manual/installation/)
-  - Windows: [Windows install](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-windows/)
-  - Ubuntu: `sudo apt install mongodb` or follow the official repo setup for your version.
-~~2. Start the service:~~
-  - Windows: run **MongoDB** service from Services (or `net start MongoDB`).
-  - Linux (to create a service): `sudo systemctl enable mongod` (or `mongodb`).
-  - Linux: `sudo systemctl start mongod` (or `mongodb`).
-3. Install MongoDB via Atlas docker
+1. Install MongoDB via Atlas docker
   - `curl -L https://repo.mongodb.org -o atlas-cli.deb`
   - `sudo dpkg -i mongodb-atlas-cli_<version>_linux_amd64.deb`
   - Create `docker-compose.yaml`
   - `docker compose up -d`
-4. Create the database and indexes (the app will create collections on first use). Run:
+2. Create the database and indexes (the app will create collections on first use). Run:
   ```bash
    python scripts/create_vector_index.py
   ```
    If the script reports that the **vector** index could not be created (common on plain Community Server), vector search will not work until you use **Atlas** or a MongoDB build that supports it. The script still creates the regular (B-tree) indexes.
-5. Set in `.env`:
+3. Set in `.env`:
   ```
    MONGODB_URI=mongodb://localhost:27017
    MONGODB_DB=archive_search
@@ -202,7 +177,9 @@ npm ci
 npm run build
 ```
 
-This creates `frontend/dist/` with static assets. The app expects the API at the same origin or set `VITE_API_BASE` before building (e.g. in `frontend/.env.production`: `VITE_API_BASE=https://yourdomain.com` so requests go to `https://yourdomain.com/api`).
+This creates `frontend/dist/` with static assets. The app expects the API at the same origin or set `VITE_API_BASE` before building (e.g. in `frontend/.env.production`: `VITE_API_BASE=https://yourdomain.com` so requests go to `https://yourdomain.com/api`). 
+
+This may not work reliably though and you might need to manually edit dist/index.html to point to the right URLs. 
 
 ### 2. Run the API as a service
 
@@ -238,7 +215,7 @@ sudo systemctl enable archive-search-api
 sudo systemctl start archive-search-api
 ```
 
-**Using a process manager (e.g. Gunicorn + Uvicorn):**
+**Alternatively, use a process manager (e.g. Gunicorn + Uvicorn):**
 
 ```bash
 pip install gunicorn

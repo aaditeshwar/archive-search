@@ -59,7 +59,6 @@ def fetch_with_selenium(url, timeout=20) -> tuple[str, str]:
         )
 
         final_url = driver.current_url
-        print("----- final_url -----", final_url)
 
         # Use HEAD request to detect content-type
 #        head = requests.head(final_url, allow_redirects=True, timeout=timeout)
@@ -67,7 +66,6 @@ def fetch_with_selenium(url, timeout=20) -> tuple[str, str]:
 
         # @aseth - using HEAD is probably redundant. getting it directly from the selenium driver
         content_type = driver.execute_script("return document.contentType;")
-        print("----- content_type -----", content_type)
 
         if _is_pdf_url(final_url, content_type):
             # @aseth - removing redundant call to get the pdf again using requests.get
@@ -79,7 +77,6 @@ def fetch_with_selenium(url, timeout=20) -> tuple[str, str]:
             return _extract_pdf(resp.content, final_url)
 
         raw_html = driver.page_source
-        print("------ raw_html -------", len(raw_html))
         return _extract_html(raw_html.encode("utf-8"), final_url, content_type)
 
     except Exception as e:

@@ -85,11 +85,8 @@ def run_pipeline(
     all_chunk_docs = []
     latest_message_id = None
     for msg in messages:
-        print("-----msg------", msg, "-----------")
         links = extract_links(msg.body)
-        print("-----links-----", links, "-----------")
         msg.links = links
-        print("------messages_coll-----", msg.model_dump(), "---------")
         messages_coll.update_one(
             {"message_id": msg.message_id},
             {"$set": msg.model_dump()},
@@ -104,7 +101,6 @@ def run_pipeline(
             if not text:
                 continue
             for i, chunk_text_val in enumerate(chunk_text(text)):
-                print("------chunk_text_1-----", chunk_text_val, "---------")
                 all_chunk_docs.append({
                     "chunk_id": _chunk_id("message", msg.message_id, "", i),
                     "text": chunk_text_val,
@@ -121,7 +117,6 @@ def run_pipeline(
         text = msg.body.strip()
         if text:
             for i, ct in enumerate(chunk_text(text)):
-                print("------chunk_text_2-----", ct, "---------")
                 all_chunk_docs.append({
                     "chunk_id": _chunk_id("message", msg.message_id, "", i),
                     "text": ct + "\n" + msg.subject,
@@ -146,7 +141,6 @@ def run_pipeline(
                     dummy, raw_text = fetch_with_selenium(url)
                     prev = linked_coll.find_one({"url": norm}) or {}
                     msg_ids = list(set(prev.get("message_ids", []) + [msg.message_id]))
-                    print("------linked_coll-----", len(raw_text), "---------")
                     linked_coll.update_one(
                         {"url": norm},
                         {
@@ -173,7 +167,6 @@ def run_pipeline(
             if not raw_text or len(raw_text.strip()) < 50:
                 continue
             for j, ct in enumerate(chunk_text(raw_text)):
-                print("------chunk_text_3-----", ct, "---------")
                 all_chunk_docs.append({
                     "chunk_id": _chunk_id("linked_page", msg.message_id, norm, j),
                     "text": ct + "\n" + msg.subject,
